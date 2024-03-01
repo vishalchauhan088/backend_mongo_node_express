@@ -1,0 +1,22 @@
+{
+  "name": "learning_npm",
+  "version": "1.0.0",
+  "description": "'learning npm '",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "npm"
+  ],
+  "author": "Vishal Chauhan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "update": "^0.7.4"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "cli": "^1.0.1"
+  }
+}

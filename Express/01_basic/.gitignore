@@ -1,0 +1,68 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+
+# Mac OSX
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Build files
+/build
+
+# Compiled binary addons
+/build/Release
+
+# Coverage output
+/coverage
+
+# Next.js build output
+/.next/
+
+# Compiled output
+/dist
+
+# Project-specific
+/uploads
+
+# Visual Studio Code workspace file
+*.code-workspace
+
+# Jest coverage directory
+/coverage
+
+# Yarn
+yarn-error.log
