@@ -84,7 +84,10 @@ const errorController = (err,req,res,next)=>{
      
       let error = {...err}
       
-      if(error.path === '_id'){
+      // if( error.path === '_id'){
+      // error.name === 'casteError' > not present in production env error object
+
+      if(err instanceof mongoose.Error.CastError && err.kind === 'ObjectId'){
        
         error =  handleCastError(error,res);
       }
