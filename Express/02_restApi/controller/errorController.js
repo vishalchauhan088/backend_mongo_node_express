@@ -5,6 +5,10 @@ const handleCastError = (err)=>{
   return new AppError(`Invalid ID  ${err.path} : ${err.value}` , 400)
 }
 
+const handleDuplicateFieldsDB = (err)=>{
+  return new AppError(`Duplicate Key Value :  ${err.keyValue.name} , Please enter another value` , 400)
+}
+
 
 function sendErrorDev (err,res){
   res.status(err.statusCode).json({
@@ -34,7 +38,7 @@ function sendErroProd (err,res){
 
       status:err.status,
       message:'something went very wrong', // send a generic error message: as it may be programming error
-      error:err
+     
     })
 
   }
@@ -66,12 +70,16 @@ const errorController = (err,req,res,next)=>{
     else if( process.env.NODE_ENV === 'production'){
 
       //handling Cast error
-      console.log(err);
+     
       let error = {...err}
       
       if(error.path === '_id'){
        
         error =  handleCastError(error,res);
+      }
+
+      if(error.code === 11000){
+        error = handleDuplicateFieldsDB(error);
       }
 
       
