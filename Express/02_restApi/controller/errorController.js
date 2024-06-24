@@ -1,7 +1,12 @@
+const AppError = require("../utils/appError");
 
 
+const handleCastError = (err)=>{
+  return new AppError(`Invalid ID  ${err.path} : ${err.value}` , 400)
+}
 
-function sendErrorDev (res,err){
+
+function sendErrorDev (err,res){
   res.status(err.statusCode).json({
     status:err.status,
     error:err,
@@ -12,7 +17,8 @@ function sendErrorDev (res,err){
 
 
 
-function sendErroProd (res,err){
+function sendErroProd (err,res){
+  
 
   if(err.isOperational === true){
     res.status(err.statusCode).json({
@@ -20,15 +26,15 @@ function sendErroProd (res,err){
       message:err.message
     })
   }
-
   else {
-    console.log('Something Went Wrong !!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 
+    console.log('Something Went Wrong !!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 
     res.status(err.statusCode).json({
 
       status:err.status,
-      message:'something went very wrong' // send a generic error message: as it may be programming error
+      message:'something went very wrong', // send a generic error message: as it may be programming error
+      error:err
     })
 
   }
@@ -47,10 +53,29 @@ const errorController = (err,req,res,next)=>{
     err.status = err.status || "error";
 
     if(process.env.NODE_ENV === 'development'){
-      sendErrorDev(res,err);
+
+
+
+      sendErrorDev(err,res);
+
+
+
     }
+
+
     else if( process.env.NODE_ENV === 'production'){
-      sendErroProd(res,err);
+
+      //handling Cast error
+      console.log(err);
+      let error = {...err}
+      
+      if(error.path === '_id'){
+       
+        error =  handleCastError(error,res);
+      }
+
+      
+      sendErroProd(error,res);
     }
 
     //console.log(err.stack);
