@@ -1,7 +1,9 @@
 const express = require("express");
-const tourControllers = require('../controller/tourController')
+const tourControllers = require('../controller/tourController');
+const AppError = require("../utils/appError");
 
 const router = express.Router();
+const {ObjectId} = require('mongoose').Types
 
 
 // param middleware
@@ -11,6 +13,8 @@ const router = express.Router();
 // })
 
 // router.param('id',tourControllers.checkId);
+
+
 
 router.get('/get-top-5',tourControllers.aliasTop5,tourControllers.getAllTours);
 router.get('/tour-stats',tourControllers.getTourStats);

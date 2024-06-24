@@ -6,6 +6,9 @@ const catchAsync = require('../utils/catchAsync.js');
 const AppError = require("../utils/appError.js");
 
 
+
+
+
 exports.aliasTop5 = (req, res, next) => {
   //sort=price,-ratingsAverage&page=1&limit=5
   req.query.sort = "price,-ratingsAverage";
@@ -148,14 +151,18 @@ exports.createNewTour = catchAsync( async (req, res,next) => {
 
 exports.updateTour = catchAsync( async (req, res,next) => {
 
-    const newTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
+
+    if(!tour){
+      return  next(new AppError('No document found with that ID',404));
+    }
     res.status(200).json({
       status: "success",
       data: {
-        tour: newTour,
+        tour: tour,
       },
     });
  
@@ -163,10 +170,20 @@ exports.updateTour = catchAsync( async (req, res,next) => {
 
 exports.deleteTour = catchAsync( async (req, res,next) => {
   
-    await Tour.deleteOne({ _id: req.params.id });
+    const tour = await Tour.deleteOne({ _id: req.params.id });
+
+    // check tour.deleteCount : it will return 0 if no document was found to delete
     //const tour = await Tour.findByIdAndDelete(req.params.id);
+    
+    //adding a 404 tour in case tour to be deleted is not found 
+
+    if( !tour.deletedCount ){
+      return next(new AppError('No document found with that ID',404)); //calling next to go to global error handler middleware
+    }
+
     res.status(200).json({
       status: "success",
+      length:tour.deletedCount,
       data: null,
     });
  
