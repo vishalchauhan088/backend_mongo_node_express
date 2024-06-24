@@ -1,6 +1,6 @@
 const express = require("express");
 
-const Tour = require("../../Models/tour.js");
+const Tour = require("../Models/tour.js");
 
 
 exports.aliasTop5 = (req,res,next) => {

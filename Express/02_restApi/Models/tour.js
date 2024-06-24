@@ -10,8 +10,8 @@ const tourSchema = new mongoose.Schema(
       require: [true, "A Tour must have a name"],
       unique: true,
       minLength:[10,'A Tour name should be minimun 10'],
-      maxLength:[40,'A Tour name should be max size of 40'],
-      validate:[validator.isAlpha,"name must contain character"]
+      maxLength:[40,'A Tour name should be max size of 40']
+      // validate:[validator.isAlpha,"name must contain character"]
     },
     duration: {
       type: Number,
@@ -126,13 +126,12 @@ tourSchema.virtual("durationWeeks").get(function () {
 // has prameter access of next();
 tourSchema.pre('save',function(next){
     this.slug = slugify(`${this.name}`,{lower:true,trim:true}); // we need to have slug in schema else will not save in database
-    console.log(this.name) // we have access to document being saved
 
     next();
 });
 
 tourSchema.pre('save',function(next){
-    console.log('document is being saved !!!!!');
+    console.log('inside pre save: document is being saved !!!!!');
     next()
 })
 
@@ -142,11 +141,11 @@ tourSchema.pre('save',function(next){
 // has access to next()
 
 tourSchema.post('save',function(doc,next){ // doc is finished document
-    console.log('finished document is:',doc.name);
+    console.log('inside post save',doc.name);
     next();
 });
 tourSchema.post('save',function(doc,next){
-    console.log('document has been saved');
+    console.log('inside post save');
     next();
 })
 
@@ -191,7 +190,7 @@ tourSchema.pre(/^find/,function(next){
 
 tourSchema.post(/^find/,function(docs,next){
     console.log('excution time :',Date.now() - this.start);
-    console.log('doc are fetched ');
+    // console.log('doc are fetched ');
     next();
 });
 

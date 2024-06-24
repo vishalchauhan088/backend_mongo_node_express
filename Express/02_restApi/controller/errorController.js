@@ -1,5 +1,5 @@
 
-errorController = (err,req,res,next)=>{
+const errorController = (err,req,res,next)=>{
 
     //console.log(err.stack);
       // we will create custom error handler class with these properties
