@@ -88,7 +88,8 @@ exports.aliasTop5 = (req, res, next) => {
 // }
 
 exports.getAllTours = catchAsync(async (req, res,next) => {
- 
+    //uncomment this console to see how it is being handled 
+    //console.log(x);
     const features = new APIFeatures(Tour.find(), req.query)
       .filterQueryObj()
       .sort()
