@@ -1,9 +1,9 @@
 const express = require("express");
 
 const Tour = require("../Models/tour.js");
-
 const APIFeatures = require("../utils/apiFeatures.js");
-const catchAsync = require('../utils/catchAsync.js')
+const catchAsync = require('../utils/catchAsync.js');
+const AppError = require("../utils/appError.js");
 
 
 exports.aliasTop5 = (req, res, next) => {
@@ -84,7 +84,7 @@ exports.aliasTop5 = (req, res, next) => {
 //   }
 // }
 
-exports.getAllTours = catchAsync(async (req, res) => {
+exports.getAllTours = catchAsync(async (req, res,next) => {
  
     const features = new APIFeatures(Tour.find(), req.query)
       .filterQueryObj()
@@ -106,21 +106,27 @@ exports.getAllTours = catchAsync(async (req, res) => {
   
 });
 
-exports.getSpecificTour = catchAsync (async (req, res) => {
+exports.getSpecificTour = catchAsync (async (req, res,next) => {
  
-    const resultTour = await Tour.findOne({ _id: req.params.id });
+    const tour = await Tour.findOne({ _id: req.params.id });
     //const resultTour = await Tour.findById(req.params.id); // same as above
+
+    //adding a 404 not found  as without this json will output status success
+
+    if(!tour){
+      return next( new AppError("No result found with that ID",404)); // callling our custom error function
+    }
 
     res.status(200).json({
       status: "success",
       data: {
-        tour: resultTour,
+        tour: tour,
       },
     });
   
 });
 
-exports.createNewTour = catchAsync( async (req, res) => {
+exports.createNewTour = catchAsync( async (req, res,next) => {
  
     //1 way to create tour and save it
 
@@ -140,7 +146,7 @@ exports.createNewTour = catchAsync( async (req, res) => {
   
 });
 
-exports.updateTour = catchAsync( async (req, res) => {
+exports.updateTour = catchAsync( async (req, res,next) => {
 
     const newTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -155,7 +161,7 @@ exports.updateTour = catchAsync( async (req, res) => {
  
 });
 
-exports.deleteTour = catchAsync( async (req, res) => {
+exports.deleteTour = catchAsync( async (req, res,next) => {
   
     await Tour.deleteOne({ _id: req.params.id });
     //const tour = await Tour.findByIdAndDelete(req.params.id);
@@ -166,7 +172,7 @@ exports.deleteTour = catchAsync( async (req, res) => {
  
 });
 
-exports.getTourStats = catchAsync( async (req, res) => {
+exports.getTourStats = catchAsync( async (req, res,next) => {
   
     const tour = await Tour.aggregate([
       {
@@ -220,7 +226,7 @@ exports.getTourStats = catchAsync( async (req, res) => {
  
 });
 
-exports.getMonthlyPlan = catchAsync( async(req,res)=>{
+exports.getMonthlyPlan = catchAsync( async(req,res,next)=>{
 
 
     const year = req.params.year * 1;

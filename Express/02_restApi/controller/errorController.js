@@ -10,7 +10,7 @@ const errorController = (err,req,res,next)=>{
   
       res.status(err.statusCode).json({
         status:err.status,
-        message:"hello"
+        message:err.message
       })
 }
 
