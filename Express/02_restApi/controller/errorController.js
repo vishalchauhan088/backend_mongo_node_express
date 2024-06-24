@@ -1,5 +1,5 @@
 const AppError = require("../utils/appError");
-
+const mongoose = require('mongoose');
 
 const handleCastError = (err)=>{
   return new AppError(`Invalid ID  ${err.path} : ${err.value}` , 400)
@@ -9,6 +9,16 @@ const handleDuplicateFieldsDB = (err)=>{
   return new AppError(`Duplicate Key Value :  ${err.keyValue.name} , Please enter another value` , 400)
 }
 
+
+const handleValidationError = (err)=>{
+  
+  console.log(err);
+  let message = Object.values(err.errors).map(el => el.message);
+  message = message.join('. ');
+
+
+  return new AppError(`${message} validation error` , 400)
+}
 
 function sendErrorDev (err,res){
   res.status(err.statusCode).json({
@@ -37,7 +47,8 @@ function sendErroProd (err,res){
     res.status(err.statusCode).json({
 
       status:err.status,
-      message:'something went very wrong', // send a generic error message: as it may be programming error
+      message:'something went very wrong', // send a generic error message: as it may be programming error,
+      error:err
      
     })
 
@@ -81,6 +92,11 @@ const errorController = (err,req,res,next)=>{
       if(error.code === 11000){
         error = handleDuplicateFieldsDB(error);
       }
+
+      if(err instanceof mongoose.Error.ValidationError){
+        error = handleValidationError(error);
+      }
+
 
       
       sendErroProd(error,res);
