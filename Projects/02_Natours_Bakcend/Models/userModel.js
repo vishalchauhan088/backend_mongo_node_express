@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcryptjs = require('bcryptjs');
+const bcryptjs = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,18 +21,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: ["true", "Password is required"],
       minLength: [8, "Password must be of length 8"],
+      select: false,
     },
     passwordConfirm: {
       type: String,
       required: [true, "please provide confirm password"],
 
-      //this will work only on save() or .create() 
-      validate:{
-        validator:function(el){
-            return this.password === el; // el is value of passwordConfirm // value is accesible
+      //this will work only on save() or .create()
+      validate: {
+        validator: function (el) {
+          return this.password === el; // el is value of passwordConfirm // value is accesible
         },
-        message:"Password and Confirm Password should be same"
-      }
+        message: "Password and Confirm Password should be same",
+      },
     },
     //explicitly defining timestamps to use select property
     createdAt: {
@@ -51,16 +52,30 @@ const userSchema = new mongoose.Schema(
 );
 
 //encrypting the password
-userSchema.pre('save', async function(){
-    //check if passwors is changed
-    if(!this.isModified('password')) return next();
+userSchema.pre("save", async function () {
+  //check if passwors is changed
+  if (!this.isModified("password")) return next();
 
-    //encrypting the password
-    this.password = await bcryptjs.hash(this.password,15)
+  //encrypting the password
+  this.password = await bcryptjs.hash(this.password, 15);
 
-    //removing passwordConfirm field || now this section will not be saved in db
-    this.passwordConfirm = undefined;
-})
+  //removing passwordConfirm field || now this section will not be saved in db
+  this.passwordConfirm = undefined;
+});
+
+//instance method on userSchema
+userSchema.methods.isCorrectPassword = async function (
+  candidatePass,
+  userPass
+) {
+  //this will  not available if it's arrow function
+  //we can't use this.password bcz pssword select property is false is schema
+
+  //candidatePass : send by user to verify | it's a plain text
+  //userPass is encrypted password stored in db
+
+  return await bcryptjs.compare(candidatePass, userPass);
+};
 
 const User = mongoose.model("User", userSchema);
 
