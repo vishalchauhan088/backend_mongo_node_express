@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcryptjs = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,6 +25,14 @@ const userSchema = new mongoose.Schema(
     passwordConfirm: {
       type: String,
       required: [true, "please provide confirm password"],
+
+      //this will work only on save() or .create() 
+      validate:{
+        validator:function(el){
+            return this.password === el; // el is value of passwordConfirm // value is accesible
+        },
+        message:"Password and Confirm Password should be same"
+      }
     },
     //explicitly defining timestamps to use select property
     createdAt: {
@@ -40,6 +49,18 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+//encrypting the password
+userSchema.pre('save', async function(){
+    //check if passwors is changed
+    if(!this.isModified('password')) return next();
+
+    //encrypting the password
+    this.password = await bcryptjs.hash(this.password,15)
+
+    //removing passwordConfirm field || now this section will not be saved in db
+    this.passwordConfirm = undefined;
+})
 
 const User = mongoose.model("User", userSchema);
 
