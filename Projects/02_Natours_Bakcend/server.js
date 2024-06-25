@@ -2,7 +2,7 @@ const dotenv = require("dotenv").config();
 const app = require("./index");
 const PORT = process.env.PORT || 3000;
 const mongoose = require("mongoose");
-const Tour = require("./Models/tour");
+const Tour = require("./Models/tourModel");
 
 // this will handled synchronous code exceptioin/error
 

@@ -1,6 +1,6 @@
 const express = require("express");
 
-const Tour = require("../Models/tour.js");
+const Tour = require("../Models/tourModel.js");
 const APIFeatures = require("../utils/apiFeatures.js");
 const catchAsync = require('../utils/catchAsync.js');
 const AppError = require("../utils/appError.js");
