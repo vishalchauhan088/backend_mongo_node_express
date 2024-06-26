@@ -1,8 +1,3 @@
-const dotenv = require("dotenv").config();
-const app = require("./index");
-const PORT = process.env.PORT || 3000;
-const mongoose = require("mongoose");
-const Tour = require("./Models/tourModel");
 
 // this will handled synchronous code exceptioin/error
 
@@ -16,10 +11,14 @@ process.on("uncaughtException", (err) => {
 
   //process.exti(1) : abrupt way
 
-  server.close(() => {
-    process.exit(1);
-  });
+  process.exit(1);
 });
+
+const dotenv = require("dotenv").config();
+const app = require("./index");
+const PORT = process.env.PORT || 3000;
+const mongoose = require("mongoose");
+const Tour = require("./Models/tourModel");
 
 console.log("starting connection with database !!");
 const uri = process.env.DATABASE_URI.replace(

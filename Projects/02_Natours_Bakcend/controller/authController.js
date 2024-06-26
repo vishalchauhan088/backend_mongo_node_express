@@ -107,3 +107,21 @@ exports.protect = catchAsync(async(req,res,next)=>{
   //Grant ACESS TO ROUTER
   next();
 })
+
+
+// create a highorder function which will returna middleware
+
+exports.restrictTo = (...roles)=>{
+  return function(req,res,next){
+    //now we have access to rest parameter(role)
+    // user is available from protect middlware is adding logged in user
+    if(!roles.includes(req.user.role)){
+        // if not authorized we will throw an error
+        return next(new AppError('You are not authorized for this.',403));
+    }
+
+    // if authorized we will let user do next work which he is authorized to by calling next() middlware
+
+    next();
+  }
+}
