@@ -33,8 +33,11 @@ function sendErrorDev (err,res){
 
 function sendErroProd (err,res){
   
+  
 
   if(err.isOperational === true){
+    console.log('error found : ',err,err.stack,err.message);
+
     res.status(err.statusCode).json({
       status:err.status,
       message:err.message
@@ -81,15 +84,17 @@ const errorController = (err,req,res,next)=>{
     else if( process.env.NODE_ENV === 'production'){
 
       //handling Cast error
+      
+      console.log(err);
+      let error = {...err,message: err.message,stack:err.stack }
      
-      let error = {...err}
       
       // if( error.path === '_id'){
       // error.name === 'casteError' > not present in production env error object
 
       if(err instanceof mongoose.Error.CastError && err.kind === 'ObjectId'){
        
-        error =  handleCastError(error,res);
+        error =  handleCastError(error);
       }
 
       if(error.code === 11000){

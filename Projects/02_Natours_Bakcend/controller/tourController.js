@@ -177,14 +177,15 @@ exports.deleteTour = catchAsync( async (req, res,next) => {
     //const tour = await Tour.findByIdAndDelete(req.params.id);
     
     //adding a 404 tour in case tour to be deleted is not found 
-
-    if( !tour.deletedCount ){
+    console.log(tour);
+    if( tour.deletedCount===0 ){
+      
       return next(new AppError('No document found with that ID',404)); //calling next to go to global error handler middleware
     }
 
     res.status(200).json({
       status: "success",
-      length:tour.deletedCount,
+      length:tour.length,
       data: null,
     });
  
