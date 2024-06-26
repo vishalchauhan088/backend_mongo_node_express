@@ -14,6 +14,6 @@ router.post("/login", authController.login);
 
 router.route("/").get(getAllUsers).post(createNewUser);
 
-router.route("/:id").get(getSpecificUser).patch(updateUser).delete(deleteUser);
+router.route("/:id").get(getSpecificUser).patch(authController.protect,updateUser).delete(deleteUser);
 
 module.exports = router;

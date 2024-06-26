@@ -1,3 +1,4 @@
+const {promisify} = require('util');
 const User = require("../Models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
@@ -41,7 +42,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // 1: check if email and password is present in body :else> send error
 
-  if (!email || !password) {
+  if (!email.trim() || !password.trim()) {
     return next(new AppError("Please provide email and password", 404));
   }
 
@@ -66,3 +67,57 @@ exports.login = catchAsync(async (req, res, next) => {
     token,
   });
 });
+
+exports.protect = catchAsync(async(req,res,next)=>{
+  //1 get token and check if it exits // authorization key
+    console.log(req.headers);
+    let token;
+    // express changes key into lower case Autorization -> authorization
+    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
+       token = req.headers.authorization.split(' ')[1];
+    }
+
+    if(!token){
+      return next(new AppError('You are not logged in . Please login to get access.'),401)
+    }
+    console.log(token);
+
+  //2 validate the token: Token varification
+  //if varification fails -> handle error using global error handling middleware
+  //sample error object
+  // "error": {
+  //       "name": "JsonWebTokenError",
+  //       "message": "invalid signature",
+  //       "statusCode": 500,
+  //       "status": "error"
+  //   },
+    
+  const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET);
+  
+  // handle error where token was expired || handle in global handler middleware
+  // "error": {
+  //       "name": "TokenExpiredError",
+  //       "message": "jwt expired",
+  //       "expiredAt": "2024-06-26T06:59:48.000Z",
+  //       "statusCode": 500,
+  //       "status": "error"
+  // }
+
+    console.log(decoded);
+
+  //3 check if user exits 
+  // it is possible that user has been deleted after the login
+
+  const user = await User.findById(decoded.id);
+
+  if(!user){
+    return next(new AppError('User does not exits for this token',401));
+  }
+
+  //4) check if user changed password after the token was issued
+  if(user.isPasswordChangedAfter(decoded.iat)){
+    return next( new AppError('Password changed !. Login Again'));
+  }
+  req.user = user;
+    next();
+}) 

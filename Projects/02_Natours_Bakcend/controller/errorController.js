@@ -1,16 +1,32 @@
 const AppError = require("../utils/appError");
 const mongoose = require('mongoose');
 
+
+
+
 const handleCastError = (err)=>{
   return new AppError(`Invalid ID  ${err.path} : ${err.value}` , 400)
 }
+
+
 
 const handleDuplicateFieldsDB = (err)=>{
   return new AppError(`Duplicate Key Value :  ${err.keyValue.name} , Please enter another value` , 400)
 }
 
+const handleJsonWebTokenError = (err)=>{
+  return new AppError('Invalid token ! , login again',401);
+}
+
+const handleTokenExpiredError = ()=>{
+  return new AppError('Login Session Expired !. Relogin to access',401);
+}
+
+
 
 const handleValidationError = (err)=>{
+
+  //by mongoose
   
   console.log(err);
   let message = Object.values(err.errors).map(el => el.message);
@@ -43,6 +59,7 @@ function sendErroProd (err,res){
   else {
 
     console.log('Something Went Wrong !!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+    console.log(err);
 
     res.status(err.statusCode).json({
 
@@ -98,6 +115,23 @@ const errorController = (err,req,res,next)=>{
 
       if(err instanceof mongoose.Error.ValidationError){
         error = handleValidationError(error);
+      }
+
+      //json web token verfication error handling
+      //sample error object
+      // "error": {
+      //       "name": "JsonWebTokenError",
+      //       "message": "invalid signature",
+      //       "statusCode": 500,
+      //       "status": "error"
+      //   },
+
+      if(error.name === 'JsonWebTokenError'){
+        error = handleJsonWebTokenError();
+      }
+
+      if(error.name === 'TokenExpiredError'){
+        error = handleTokenExpiredError();
       }
 
 

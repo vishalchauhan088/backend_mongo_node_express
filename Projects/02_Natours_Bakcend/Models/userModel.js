@@ -35,6 +35,9 @@ const userSchema = new mongoose.Schema(
         message: "Password and Confirm Password should be same",
       },
     },
+    passwordChangedAt:{
+      type: Date
+    },
     //explicitly defining timestamps to use select property
     createdAt: {
       type: Date,
@@ -61,6 +64,7 @@ userSchema.pre("save", async function () {
 
   //removing passwordConfirm field || now this section will not be saved in db
   this.passwordConfirm = undefined;
+  next();
 });
 
 //instance method on userSchema
@@ -76,6 +80,48 @@ userSchema.methods.isCorrectPassword = async function (
 
   return await bcryptjs.compare(candidatePass, userPass);
 };
+
+userSchema.methods.isPasswordChangedAfter = async function(jwtTimestamps){
+  const jwtSeconds = Math.floor(jwtTimestamps / 1000);
+
+  // Get the passwordChangedAt timestamp in seconds
+  const passTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
+
+  console.log("Password Changed Timestamp:", passTimestamp);
+  console.log("JWT Timestamp:", jwtSeconds);
+
+  // Compare and return true if password changed after jwtTimestamps
+  return jwtSeconds < passTimestamp;
+}
+
+//will work on save and  create
+userSchema.pre('save',function(next){
+  if(this.isModified('password')){
+    this.passwordChangedAt = Date.now();
+  }
+  next();
+});
+
+userSchema.pre(/^(findOneAndUpdate|findByIdAndUpdate|updateOne)$/,function(next){
+  //getting update to be applied
+  const update = this.getUpdate();
+  
+
+  //checking if update is being applied direclty : {password:asdf};
+  if(update.password){
+    this.passwordChangeddAt = Date.now();
+  }
+  else if(update.$set && update.$set.password){
+    this.passwordChangedAt = Date.now();
+  }
+
+  //remove confirm password
+  this.passwordConfirm = undefined;
+
+  next();
+});
+
+
 
 const User = mongoose.model("User", userSchema);
 

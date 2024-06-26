@@ -31,7 +31,7 @@ mongoose.connect(uri).then((con) => {
   console.log("database connection succesfull");
 });
 
-// handling in unhandled error event at global level
+// handling  unhandled error event at global level
 // .catch((e) => {
 //   console.log("database connection error", e);
 // });
