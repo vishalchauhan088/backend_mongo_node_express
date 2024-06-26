@@ -105,6 +105,13 @@ const errorController = (err,req,res,next)=>{
         error = handleValidationError(error);
       }
 
+      if(err.name === 'JsonWebTokenError'){
+        error = new AppError('JsonWebTokenError error !. Please relogin',404);
+      }
+      if(err.name === 'TokenExpiredError'){
+        error = new AppError('Session Expired !. Login Again. ',401);
+      }
+
 
       
       sendErroProd(error,res);

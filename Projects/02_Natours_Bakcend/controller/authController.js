@@ -1,3 +1,4 @@
+const {promisify} = require('util');
 const User = require("../Models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
@@ -22,6 +23,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt:req.body.passwordChangedAt,
   });
 
   const token = getToken(user._id);
@@ -66,3 +68,42 @@ exports.login = catchAsync(async (req, res, next) => {
     token,
   });
 });
+
+exports.protect = catchAsync(async(req,res,next)=>{
+  // 1) Getting token and check if it is there
+  let token;
+  if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
+
+    // authorization: 'Bearer asdfasdflkjf'
+    token = req.headers.authorization.split(' ')[1];
+    
+  }
+  if(!token){
+    return next(new AppError('You are not logged in. Please login'));
+  }
+  
+  console.log(token);
+
+  //2) verify the token | if it has been manipulated
+  const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET);
+  console.log(decoded);
+
+
+  //3) check if the user is present by that id present in token
+  const user = await User.findById(decoded.id);
+  if(!user){
+    return next(new AppError('User belonging to token no longer exists!',401));
+  }
+
+
+  //4) check if password has not been updated after token was issued
+  if(user.changedPasswordAfter(decoded.iat)){
+    return next(new AppError('Password has changed !. Relogin',401));
+  }
+
+  req.user = user;
+  
+
+  //Grant ACESS TO ROUTER
+  next();
+})

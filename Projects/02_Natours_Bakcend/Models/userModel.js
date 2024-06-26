@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema(
         message: "Password and Confirm Password should be same",
       },
     },
+    passwordChangedAt:{
+      type:Date,
+      required:true
+    },
     //explicitly defining timestamps to use select property
     createdAt: {
       type: Date,
@@ -76,6 +80,16 @@ userSchema.methods.isCorrectPassword = async function (
 
   return await bcryptjs.compare(candidatePass, userPass);
 };
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp){
+    if(this.passwordChangedAt){
+      const changedTimestamp = parseInt(this.passwordChangedAt.getTime()/1000,10);
+      console.log(JWTTimestamp,changedTimestamp);
+
+       return JWTTimestamp < changedTimestamp; // 200 < 300 -> true
+    }
+    return false;
+}
 
 const User = mongoose.model("User", userSchema);
 
