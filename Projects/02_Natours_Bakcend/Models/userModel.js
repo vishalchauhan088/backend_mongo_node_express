@@ -46,6 +46,11 @@ const userSchema = new mongoose.Schema(
     },
     passwordResetToken:String,
     passwordResetExpires:Date,
+    active:{
+      type:Boolean,
+      default:true,
+      select:false
+    },
     //explicitly defining timestamps to use select property
     createdAt: {
       type: Date,
@@ -82,6 +87,16 @@ userSchema.pre('save',function(next){
 
   this.passwordChangedAt = Date.now() - 2000; // decreasing some time 
   
+  next();
+});
+
+userSchema.pre(/^find/,function(next){
+
+  // this points to present query object 
+  // so apply new filter which includes only active user
+
+  this.find({active:false});
+
   next();
 })
 

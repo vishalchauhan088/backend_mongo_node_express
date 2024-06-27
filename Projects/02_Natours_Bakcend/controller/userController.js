@@ -67,6 +67,21 @@ exports.updateMe = catchAsync(async(req,res,next)=>{
 
 
 
+});
+
+exports.deleteMe = catchAsync(async(req,res,next)=>{
+    // we will not actually delete the user instead we will set teh property active: false;
+    // it's a protected route | user doc is present in req 
+
+    await User.findByIdAndUpdate(req.user._id,{active:false}); // sets active to false;
+
+    // now we want only active usr to show in any query include find like findOne, find, findById,findByIdAndUpdate etc
+    // so , make a query middleware for this userSchema.pre(/^find/,callback); check user model
+
+    res.status(200).json({
+        status:"success",
+        data:null
+    })
 })
 exports.createNewUser = (req,res)=>{
     res.status(500).json(
