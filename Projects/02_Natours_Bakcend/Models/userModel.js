@@ -74,6 +74,17 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
 });
 
+
+userSchema.pre('save',function(next){
+  if(!this.isModified('password') || this.isNew){
+    return next();
+  }
+
+  this.passwordChangedAt = Date.now() - 2000; // decreasing some time 
+  
+  next();
+})
+
 //instance method on userSchema
 userSchema.methods.isCorrectPassword = async function (
   candidatePass,
