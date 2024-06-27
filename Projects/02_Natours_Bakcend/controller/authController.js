@@ -110,6 +110,7 @@ exports.protect = catchAsync(async(req,res,next)=>{
 
 
 // create a highorder function which will returna middleware
+// we will do it as instance method
 
 exports.restrictTo = (...roles)=>{
   return function(req,res,next){
@@ -125,3 +126,39 @@ exports.restrictTo = (...roles)=>{
     next();
   }
 }
+
+
+exports.forgotPassword = catchAsync(async(req,res,next)=>{
+  //1) get user based on posted email
+
+  let user = await User.findOne({email:req.body.email});
+  
+
+  if(!user){
+    return next( new AppError('No user found with that email!',404));
+  }
+
+  
+  //2) generate random reset token
+  // it will be as instance method
+
+  const restToken = user.createPasswordResetToken();
+  //above function call has modified the user doc || now we need to save it
+
+  
+  await user.save({validateBeforeSave:false})
+  
+
+  console.log('user saved');
+
+  //3) send reset token as email
+  res.status(200).json({
+    status:'success'
+  })
+  
+});
+
+
+exports.resetPassword = catchAsync(async(req,res,next)=>{
+
+});

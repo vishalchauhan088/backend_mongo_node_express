@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcryptjs = require("bcryptjs");
+const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema(
   {
@@ -41,9 +42,10 @@ const userSchema = new mongoose.Schema(
       },
     },
     passwordChangedAt: {
-      type: Date,
-      required: true,
+      type: Date
     },
+    passwordResetToken:String,
+    passwordResetExpires:Date,
     //explicitly defining timestamps to use select property
     createdAt: {
       type: Date,
@@ -61,7 +63,7 @@ const userSchema = new mongoose.Schema(
 );
 
 //encrypting the password
-userSchema.pre("save", async function () {
+userSchema.pre("save", async function (next) {
   //check if passwors is changed
   if (!this.isModified("password")) return next();
 
@@ -97,6 +99,23 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     return JWTTimestamp < changedTimestamp; // 200 < 300 -> true
   }
   return false;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  // we need to put this hashed token to database so that we can compare 
+
+  this.passwordResetToken = hashedToken;
+
+  // settting up passwordResetExpires time
+  this.passwordResetExpires = Date.now() + 10*60*1000 // 10 min in ms
+
+  console.log({resetToken},{hashedToken});
+  //return plain test token which will be sent to user by email
+  console.log('returning from createpqsswordresettoken');
+  return resetToken;
 };
 
 const User = mongoose.model("User", userSchema);
