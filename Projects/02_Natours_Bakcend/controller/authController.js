@@ -2,6 +2,7 @@ const {promisify} = require('util');
 const User = require("../Models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+const sendEmail = require("../utils/email");
 const jwt = require("jsonwebtoken");
 
 const getToken = (id) => {
@@ -142,7 +143,7 @@ exports.forgotPassword = catchAsync(async(req,res,next)=>{
   //2) generate random reset token
   // it will be as instance method
 
-  const restToken = user.createPasswordResetToken();
+  const resetToken = user.createPasswordResetToken();
   //above function call has modified the user doc || now we need to save it
 
   
@@ -152,8 +153,45 @@ exports.forgotPassword = catchAsync(async(req,res,next)=>{
   console.log('user saved');
 
   //3) send reset token as email
+
+  //build url on which user will visit to rest
+
+  const url = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+
+  //building message to send
+  const message = `Forgot your password ? , submit your patch request to:\n ${url}.\n.If you didn't , Please Ignore this`;
+
+  //sending email | it's asynchronous function
+
+  try{
+    
+  await sendEmail({
+    email:user.email,
+    subject: ' your password reset token . Valid for 10 min only',
+    message: message
+  })
+
+
+  }
+  catch(error){
+    console.log(error,error.stack);
+    //reset token and expired property
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    //save in database
+    await user.save({validateBeforeSave:false});
+
+    //send error
+    return next( new AppError('There was error sending email . Try again later',500));
+
+  }
+
+
+
   res.status(200).json({
-    status:'success'
+    status:'success',
+    message:'Email send'
   })
   
 });
