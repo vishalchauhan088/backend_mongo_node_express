@@ -1,11 +1,11 @@
 
 // this will handled synchronous code exceptioin/error
-
+const mongoose = require("mongoose");
 process.on("uncaughtException", (err) => {
   console.log(
     "---------------------uncaughtException:------shutting down server-------------------------"
   );
-  console.log("Error:", err.name, err.message);
+  console.log("Error:", err.name, err.message,err.stack);
  
   console.log('------shutting down server-------------------------');
 
@@ -17,7 +17,7 @@ process.on("uncaughtException", (err) => {
 const dotenv = require("dotenv").config();
 const app = require("./index");
 const PORT = process.env.PORT || 3000;
-const mongoose = require("mongoose");
+
 const Tour = require("./Models/tourModel");
 
 console.log("starting connection with database !!");

@@ -111,8 +111,20 @@ exports.getAllTours = catchAsync(async (req, res,next) => {
 });
 
 exports.getSpecificTour = catchAsync (async (req, res,next) => {
+
+  const tour = await Tour.findById(req.params.id).populate('reviews');
+  // 1 way to populate
  
-    const tour = await Tour.findOne({ _id: req.params.id });
+    // const tour = await Tour.findOne({ _id: req.params.id }).populate('guides');
+
+    // 2 way to populate
+    // const tour = await Tour.findOne({ _id: req.params.id }).populate({
+    //   path:'guides',
+    //   select:'-__v -passwordChangedAt'
+    // });
+
+    // ---------------------3 way move to model
+
     //const resultTour = await Tour.findById(req.params.id); // same as above
 
     //adding a 404 not found  as without this json will output status success

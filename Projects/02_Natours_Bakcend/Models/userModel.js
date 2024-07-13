@@ -44,12 +44,12 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: {
       type: Date,
     },
-    passwordResetToken:String,
-    passwordResetExpires:Date,
-    active:{
-      type:Boolean,
-      default:true,
-      select:false
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
     },
     //explicitly defining timestamps to use select property
     createdAt: {
@@ -79,26 +79,24 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
 });
 
-
-userSchema.pre('save',function(next){
-  if(!this.isModified('password') || this.isNew){
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) {
     return next();
   }
 
-  this.passwordChangedAt = Date.now() - 2000; // decreasing some time 
-  
+  this.passwordChangedAt = Date.now() - 2000; // decreasing some time
+
   next();
 });
 
-userSchema.pre(/^find/,function(next){
-
-  // this points to present query object 
+userSchema.pre(/^find/, function (next) {
+  // this points to present query object
   // so apply new filter which includes only active user
 
-  this.find({active:false});
+  this.find({ active: true });
 
   next();
-})
+});
 
 //instance method on userSchema
 userSchema.methods.isCorrectPassword = async function (
@@ -128,19 +126,21 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-  
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  // we need to put this hashed token to database so that we can compare 
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  // we need to put this hashed token to database so that we can compare
 
   this.passwordResetToken = hashedToken;
 
   // settting up passwordResetExpires time
-  this.passwordResetExpires = Date.now() + 10*60*1000 // 10 min in ms
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 min in ms
 
-  console.log({resetToken},{hashedToken});
+  console.log({ resetToken }, { hashedToken });
   //return plain test token which will be sent to user by email
-  console.log('returning from createpqsswordresettoken');
+  console.log("returning from createpqsswordresettoken");
   return resetToken;
 };
 

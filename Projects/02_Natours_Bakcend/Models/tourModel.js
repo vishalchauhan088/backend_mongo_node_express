@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const slugify = require('slugify');
 
 const validator = require('validator');
+const User = require("./userModel");
+const AppError = require("../utils/appError");
+
 
 const tourSchema = new mongoose.Schema(
   {
@@ -88,12 +91,43 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, "A tour must have cover Image"],
     },
+    // guides:Array,
+    guides:[
+      {
+        type:mongoose.Schema.ObjectId,
+        ref:'User'
+      }
+    ],
     images: [String], // array of string
     // createAt:{
     //     type:Date, // converts millisends date in actual date
     //     default:Date.now() // js data in milliseconds
     // },
     startDates: [Date],
+    startLocation:{
+      //GeoJson
+      type:{
+        type:String,
+        default:'Point',
+        enum:['Point']
+      },
+      coordinates:[Number], // longtitude and latitude
+      address : String,
+      description:String,
+    },
+    locations:[
+      {
+        type:{
+          type:String,
+          default:'Point',
+          enum:['Point']
+        },
+        coordinates:[Number], // longtitude and latitude
+        address:String,
+        descriptions:String,
+        day:Number
+      }
+    ],
     // Explicitly define the timestamps fields with select: false
     createdAt: { type: Date, select: false },
     updatedAt: { type: Date, select: false },
@@ -118,6 +152,13 @@ tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
 
+//this is virtual populate 
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField:'tour',
+  localField:'_id'
+})
+
 //-------------------------------Document MIddleWAre---------------------------------
 
 // document middleware: pre and post 
@@ -129,6 +170,19 @@ tourSchema.pre('save',function(next){
 
     next();
 });
+
+// inserting the guides in tour itself
+
+// tourSchema.pre('save',async function(next){
+//   const guidesPromise = this.guides.map( async (id)=>{
+//     const user = await User.findById(id);
+//     if(!user){
+//       next(new AppError(`No guide found with id : ${id}`,401))
+//     }
+//     return user;
+//   })
+//   this.guides = await Promise.all(guidesPromise);
+// })
 
 tourSchema.pre('save',function(next){
     console.log('inside pre save: document is being saved !!!!!');
@@ -175,6 +229,15 @@ tourSchema.post('save',function(doc,next){
 
 //Using regex for everyfunction starting with find
 //it will work for all hook starting with find : find,findOne,findById etc
+
+tourSchema.pre(/^find/,function(next){
+  this.populate({
+    path:'guides',
+    select:"-__v -passwordChangedAt"
+  })
+
+  next();
+})
 
 tourSchema.pre(/^find/,function(next){
   this.find({secretTour:{$ne:true}});

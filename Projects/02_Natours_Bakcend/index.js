@@ -2,14 +2,25 @@ const express = require("express");
 const morgan = require("morgan");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
+const reviewRouter = require("./routes/reviewRoutes");
 const AppError = require('./utils/appError');
 const errorController = require('./controller/errorController.js')
+const rateLimit = require('express-rate-limit');
+const { default: helmet } = require("helmet");
+
 
 // in this we will create user route:
 
 const app = express();
 
+
+
 //morgan middleware
+
+// setting up headers using helmet || security practices
+
+app.use(helmet()); //helmet() return a function || check documentation
+
 
 console.log(process.env.NODE_ENV);  
 
@@ -17,8 +28,20 @@ if(process.env.NODE_ENV === 'development'){
   app.use(morgan("dev"));
 }
 
+
+//global middleware
+
+const limiter = rateLimit({
+  max:100,
+  windowMs : 60*60*1000, // time in milliseconds
+  message :"too many request !! try after sometimes"
+})
+
+app.use('/api',limiter);
+
 //using middleware
-app.use(express.json());
+app.use(express.json({limit:'10kb'})); //with option object
+//app.use(express.json());
 
 // dummy global middle ware
 app.use((req, res, next) => {
@@ -36,6 +59,8 @@ app.use((req, res, next) => {
 
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/reviews",reviewRouter);
+
 
 // to handle unhandled routes5
 app.all('*',(req,res,next)=>{

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Tour = require("./Models/tour");
+const Tour = require("./Models/tourModel");
 const { json } = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
@@ -26,11 +26,11 @@ async function createConnection(){
  async function importData(){
     
     try{
-        let data = fs.readFileSync(`${__dirname}/data/tours-simple.json`);
+        let data = fs.readFileSync(`${__dirname}/data/tours.json`);
         data = JSON.parse(data);
         await Tour.create(data);
         //console.log(data);
-        const newTour = Tour.create(data);
+        //const newTour = Tour.create(data);
         console.log("data inserted in mongodb database");
         
         

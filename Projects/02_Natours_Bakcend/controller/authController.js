@@ -19,6 +19,41 @@ const getToken = (id) => {
   return token;
 };
 
+
+const createSendToken = (user, statusCode, res) => {
+  const token = getToken(user._id);
+
+  const cookieOptions =  {
+    //keep it in milllisceconds
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    // secure:true, // can be send only on https
+    httpOnly:true // can't be accessed and modified by brower 
+  }
+  if(process.env.NODE_ENV === 'production'){
+    cookieOptions.secure = true;
+  }
+
+  //password is coming while signup and login in user object
+  // 1. we have set password : select:false but still present
+  // 1. while sinup we are creating document no fetching from db, so password is present
+  // 2. while login, we are explicitly fetching password to verify so it is present in document
+
+  // let's remove password from the user object
+  user.password = undefined;
+
+  res.cookie("jwt", token,cookieOptions);
+  //201 for created
+  res.status(statusCode).json({
+    status: "success",
+    token,
+    data: {
+      user: user,
+    },
+  });
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
   const user = await User.create({
     name: req.body.name,
@@ -27,17 +62,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
   });
-
-  const token = getToken(user._id);
-
-  //201 for created
-  res.status(201).json({
-    status: "success",
-    token,
-    data: {
-      user: user,
-    },
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -63,12 +88,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   //payload only contain _id object of mongodb
-  let token = getToken(user._id);
-
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  createSendToken(user, 200, res); //sending res object also
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -194,10 +214,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-  const user = await User.findOne({ 
+  const user = await User.findOne({
     passwordResetToken: hashedToken,
-    passwordResetExpires:{$gt:Date.now()}
-  
+    passwordResetExpires: { $gt: Date.now() },
   });
 
   if (!user) {
@@ -211,35 +230,29 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
 
-  
-
-
   // 3) update changedpasswordAt property
   // we will update the changedPasswordAt property in usreSchema as instance method
-
-
 
   await user.save();
 
   // 4) logged user in and send jwt token
 
-  const token = getToken(user._id);
+  createSendToken(user, 200, res);
 
-  res.status(200).json({
-    status:'success',
-    token
-  })
+  // const token = getToken(user._id);
+
+  // res.status(200).json({
+  //   status:'success',
+  //   token
+  // })
 });
 
-
-exports.updateMyPassword = catchAsync(async(req,res,next)=>{
-
+exports.updateMyPassword = catchAsync(async (req, res, next) => {
   // user will send passwordCurrent,password,confirmPassword
 
   // 1) get the user
 
   // let currentUserToken = req.headers.authorization.split[1] // get the token from headers and [Bearer, asldfkjaslf]
-
 
   // const decoded = await promisify(jwt.verify)(currentUserToken, process.env.JWT_SECRET);
 
@@ -249,18 +262,18 @@ exports.updateMyPassword = catchAsync(async(req,res,next)=>{
 
   //explicitly ask for password
 
-  let user = await User.findById(req.user._id).select("+password")
-
-
+  let user = await User.findById(req.user._id).select("+password");
 
   // 2) check if posted password is correct
   //(user.password === req.body.password) can't do this as user providing plain password and db has hash/encrypted pass
 
-  const correct = await user.isCorrectPassword(req.body.passwordCurrent,user.password)
+  const correct = await user.isCorrectPassword(
+    req.body.passwordCurrent,
+    user.password
+  );
 
-  if(!correct){
-    
-    return next( new AppError('Wrong Password',401));
+  if (!correct) {
+    return next(new AppError("Wrong Password", 401));
   }
 
   // 3) if password correct | update the password | encryption will be takes care by pre save hook
@@ -270,14 +283,13 @@ exports.updateMyPassword = catchAsync(async(req,res,next)=>{
 
   await user.save();
 
-
   // 4) send jwt token
+  createSendToken(user, 200, res);
 
-  const token = getToken(user._id) //sign token
+  // const token = getToken(user._id) //sign token
 
-  res.status(200).json({
-    status:'success',
-    token
-  })
-
-})
+  // res.status(200).json({
+  //   status:'success',
+  //   token
+  // })
+});
