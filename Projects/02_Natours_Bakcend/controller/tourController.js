@@ -5,6 +5,7 @@ const APIFeatures = require("../utils/apiFeatures.js");
 const catchAsync = require('../utils/catchAsync.js');
 const AppError = require("../utils/appError.js");
 const reviewController = require('./reviewController.js');
+const factor = require('./handlerFactory.js');
 
 
 
@@ -113,27 +114,29 @@ exports.updateTour = catchAsync( async (req, res,next) => {
  
 });
 
-exports.deleteTour = catchAsync( async (req, res,next) => {
+exports.deleteTour = factor.deleteOne(Tour);
+
+// exports.deleteTour = catchAsync( async (req, res,next) => {
   
-    const tour = await Tour.deleteOne({ _id: req.params.id });
+//     const tour = await Tour.deleteOne({ _id: req.params.id });
 
-    // check tour.deleteCount : it will return 0 if no document was found to delete
-    //const tour = await Tour.findByIdAndDelete(req.params.id);
+//     // check tour.deleteCount : it will return 0 if no document was found to delete
+//     //const tour = await Tour.findByIdAndDelete(req.params.id);
     
-    //adding a 404 tour in case tour to be deleted is not found 
-    console.log(tour);
-    if( tour.deletedCount===0 ){
+//     //adding a 404 tour in case tour to be deleted is not found 
+//     console.log(tour);
+//     if( tour.deletedCount===0 ){
       
-      return next(new AppError('No document found with that ID',404)); //calling next to go to global error handler middleware
-    }
+//       return next(new AppError('No document found with that ID',404)); //calling next to go to global error handler middleware
+//     }
 
-    res.status(200).json({
-      status: "success",
-      length:tour.length,
-      data: null,
-    });
+//     res.status(200).json({
+//       status: "success",
+//       length:tour.length,
+//       data: null,
+//     });
  
-});
+// });
 
 exports.getTourStats = catchAsync( async (req, res,next) => {
   
