@@ -1,11 +1,29 @@
 const express = require("express");
 const tourControllers = require("../controller/tourController");
 const authController = require("../controller/authController");
-
+const reviewRouter = require('../routes/reviewRoutes');
 const AppError = require("../utils/appError");
 
+const reviewController = require("../controller/reviewController");
+
 const router = express.Router();
-const { ObjectId } = require("mongoose").Types;
+// const { ObjectId } = require("mongoose").Types;
+
+// // create review : POST tour/:tourID/reviews
+// // get all reviews : GET tour/:tourID/reviws
+// // get review : GET tour/:tourID/reviews/:reviewID
+// router
+//   .route("/:tourID/reviews")
+//   .post(authController.protect, authController.restrictTo("user"), reviewController.createReview)
+//   .get(reviewController.getAllReview);
+
+
+// redirecting the review related task to review router
+router.use('/:tourID/reviews',reviewRouter);
+
+
+
+
 
 // param middleware
 // router.param('id',(req,res,next,val)=>{
@@ -35,8 +53,10 @@ router
   .patch(tourControllers.updateTour)
   .delete(
     authController.protect,
-    authController.restrictTo("admin","lead-guide"),
+    authController.restrictTo("admin", "lead-guide"),
     tourControllers.deleteTour
   );
+
+
 
 module.exports = router;

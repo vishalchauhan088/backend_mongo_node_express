@@ -6,7 +6,16 @@ const catchAsync = require('../utils/catchAsync.js');
 
 exports.getAllReview = catchAsync(async(req,res,next)=>{
 
-    let query = Review.find();
+    let filter = {};
+    if(req.params.tourID){
+        filter = {tour:req.params.tourID};
+    }
+
+    let query = Review.find(filter);
+
+    // if(req.params.tourID){
+    //     query = query.find({tour:req.params.tourID});
+    // }
 
     let features = new APIFeatures(query,req.query).filterQueryObj().sort().fieldLimiting().pagination();
 
@@ -23,8 +32,9 @@ exports.getAllReview = catchAsync(async(req,res,next)=>{
 
 exports.createReview = catchAsync(async (req,res,next) =>{
 
-    const userId = req.user._id;
-    req.body.user = userId;
+    
+   if(!req.body.user){ req.body.user = req.user._id;}
+   if(!req.body.tour){ req.body.tour = req.params.tourID;}
 
     const review = await Review.create(req.body);
 

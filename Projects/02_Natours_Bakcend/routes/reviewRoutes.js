@@ -2,7 +2,11 @@ const express = require("express");
 const reviewController = require("../controller/reviewController");
 const authController = require("../controller/authController");
 
-const router = express.Router();
+// mergeParams:true to get params from nested routes
+
+// tour/:tourID/reviews
+// /reviews
+const router = express.Router({mergeParams:true});
 
 router
   .route("/")
