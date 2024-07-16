@@ -67,27 +67,27 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-//encrypting the password
-userSchema.pre("save", async function (next) {
-  //check if passwors is changed
-  if (!this.isModified("password")) return next();
+// //encrypting the password
+// userSchema.pre("save", async function (next) {
+//   //check if passwors is changed
+//   if (!this.isModified("password")) return next();
 
-  //encrypting the password
-  this.password = await bcryptjs.hash(this.password, 15);
+//   //encrypting the password
+//   this.password = await bcryptjs.hash(this.password, 15);
 
-  //removing passwordConfirm field || now this section will not be saved in db
-  this.passwordConfirm = undefined;
-});
+//   //removing passwordConfirm field || now this section will not be saved in db
+//   this.passwordConfirm = undefined;
+// });
 
-userSchema.pre("save", function (next) {
-  if (!this.isModified("password") || this.isNew) {
-    return next();
-  }
+// userSchema.pre("save", function (next) {
+//   if (!this.isModified("password") || this.isNew) {
+//     return next();
+//   }
 
-  this.passwordChangedAt = Date.now() - 2000; // decreasing some time
+//   this.passwordChangedAt = Date.now() - 2000; // decreasing some time
 
-  next();
-});
+//   next();
+// });
 
 userSchema.pre(/^find/, function (next) {
   // this points to present query object

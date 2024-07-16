@@ -15,6 +15,14 @@ const filterObj = (body, ...allowedFields) => {
   return result;
 };
 
+// creating this middleware to set params id to user id and call getOne on user
+exports.setUserID = (req, res, next) => {
+  req.params.id = req.user._id;
+
+  next();
+};
+exports.getMe = factory.getOne(User);
+
 exports.getAllUsers = factory.getAll(User);
 // exports.getAllUsers = catchAsync(async (req, res, next) => {
 //   const user = await User.find();
