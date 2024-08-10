@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const catchAsync = require("../utils/catchAsync");
+const Tour = require("./tourModel");
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -46,25 +48,53 @@ const reviewSchema = new mongoose.Schema(
 //   next();
 // });
 
-//--------------------------------------------virtual functions--------------------
+reviewSchema.statics.calcAverageRatings = async function (tour) {
+  const stats = await this.aggregate([
+    {
+      $match: {
+        tour: tour,
+      },
+    },
 
+    {
+      $group: {
+        _id: null,
+        totalRatings: { $sum: 1 },
+        ratingsAverage: {
+          $avg: "$rating",
+        },
+      },
+    },
+  ]);
+
+  await Tour.findByIdAndUpdate(tour, {
+    ratingsQuantity: stats[0].totalRatings,
+    ratingsAverage: stats[0].ratingsAverage,
+  });
+
+  console.log("after saving the document average ratings :", stats);
+};
+//--------------------------------------------virtual functions--------------------
 
 //-------------------------------------------document  middleware------------
 
-
+reviewSchema.post("save", async function (doc) {
+  await this.constructor.calcAverageRatings(doc.tour); // or this.tour
+  // Review.calcAverageRatings(this.tour);
+});
 //-----------------------------------------Query middlware------------
-reviewSchema.pre(/^find/,function(next){
-
+reviewSchema.pre(/^find/, function (next) {
   this.populate({
-    path:'user',
-    select:'name photo'})
+    path: "user",
+    select: "name photo",
+  });
   // }).populate({
   //   path:'tour',
   //   select:"_id name"
   // })
 
   next();
-})
+});
 
 const Review = mongoose.model("Review", reviewSchema);
 

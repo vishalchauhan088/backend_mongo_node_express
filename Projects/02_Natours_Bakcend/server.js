@@ -1,13 +1,12 @@
-
 // this will handled synchronous code exceptioin/error
 const mongoose = require("mongoose");
 process.on("uncaughtException", (err) => {
   console.log(
     "---------------------uncaughtException:------shutting down server-------------------------"
   );
-  console.log("Error:", err.name, err.message,err.stack);
- 
-  console.log('------shutting down server-------------------------');
+  console.log("Error:", err.name, err.message, err.stack);
+
+  console.log("------shutting down server-------------------------");
 
   //process.exti(1) : abrupt way
 
@@ -35,8 +34,6 @@ mongoose.connect(uri).then((con) => {
 //   console.log("database connection error", e);
 // });
 
-
-
 const server = app.listen(PORT, () => {
   console.log(`app listening on port : ${PORT}`);
 });
@@ -45,8 +42,7 @@ process.on("unhandledRejection", (err) => {
   console.log(
     "Unhandled REJECTION :-------------shutting down server------------------"
   );
-  console.log("Error:", err.name, err.message);
- 
+  console.log("Error:", err.name, err.message, err.stack);
 
   //process.exti(1) : abrupt way
 
@@ -57,10 +53,3 @@ process.on("unhandledRejection", (err) => {
 
 //creates synchronous uncaughtException error
 // console.log(x);
-
-
-
-
-
-
-
